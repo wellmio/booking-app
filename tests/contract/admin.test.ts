@@ -110,17 +110,20 @@ describe('Admin API Endpoints', () => {
   describe('PUT /api/admin/booking-options', () => {
     it('should update a booking option with valid request', async () => {
       // First, get a real booking option ID from the database
-      const optionsResponse = await fetch(`${baseUrl}/api/admin/booking-options`, {
-        headers: {
-          Authorization: `Bearer ${adminAuthToken}`,
-        },
-      });
+      const optionsResponse = await fetch(
+        `${baseUrl}/api/admin/booking-options`,
+        {
+          headers: {
+            Authorization: `Bearer ${adminAuthToken}`,
+          },
+        }
+      );
       const options = await optionsResponse.json();
-      
+
       if (options.length === 0) {
         throw new Error('No booking options available for testing');
       }
-      
+
       const bookingOption = {
         id: options[0].id, // Use real ID from database
         name: options[0].name, // Use the actual name from the database

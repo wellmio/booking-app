@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { TimeSlot } from '@/lib/db/schema';
 import { Redis } from '@upstash/redis';
@@ -15,15 +15,19 @@ const supabase = createClient(
  * Returns available time slots for booking.
  * Based on OpenAPI spec and contract tests.
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const cacheEnabled =
       process.env.NODE_ENV === 'production' &&
       !!process.env.UPSTASH_REDIS_REST_URL &&
       !!process.env.UPSTASH_REDIS_REST_TOKEN;
-    const isTest = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID !== undefined || process.env.TEST_BASE_URL !== undefined;
+    const isTest =
+      process.env.NODE_ENV === 'test' ||
+      process.env.JEST_WORKER_ID !== undefined ||
+      process.env.TEST_BASE_URL !== undefined;
     const cacheKey = 'timeslots:available:v1';
-    let cached: TimeSlot[] | null = null;
+    type ApiTimeSlot = Pick<TimeSlot, 'id' | 'start_time' | 'end_time'>;
+    let cached: ApiTimeSlot[] | null = null;
     let redis: Redis | null = null;
 
     if (cacheEnabled && !isTest) {
@@ -32,21 +36,28 @@ export async function GET(request: NextRequest) {
         token: process.env.UPSTASH_REDIS_REST_TOKEN!,
       });
       try {
-        cached = await redis.get<TimeSlot[]>(cacheKey);
+        cached = await redis.get<ApiTimeSlot[]>(cacheKey);
         if (cached && Array.isArray(cached)) {
           return NextResponse.json(cached, {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
           });
         }
-      } catch (e) {
+      } catch {
         console.log('Redis unavailable, proceeding without cache');
       }
     }
     // Try to query from database first, fallback to mock data if it fails
-    let timeSlots: any[] = [];
+    interface DbTimeSlotRow {
+      id: string;
+      start_time: string;
+      end_time: string;
+      status?: string;
+      created_at?: string;
+    }
+    let timeSlots: DbTimeSlotRow[] = [];
     let useMockData = false;
-    
+
     try {
       const { data, error } = await supabase
         .from('time_slots')
@@ -65,27 +76,33 @@ export async function GET(request: NextRequest) {
       console.log('Database connection failed, using mock data:', dbError);
       useMockData = true;
     }
-    
+
     if (useMockData) {
       // Return mock data for testing
       const mockTimeSlots: TimeSlot[] = [
         {
           id: '123e4567-e89b-12d3-a456-426614174000',
           start_time: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
-          end_time: new Date(Date.now() + 24 * 60 * 60 * 1000 + 30 * 60 * 1000).toISOString(), // Tomorrow + 30 min
+          end_time: new Date(
+            Date.now() + 24 * 60 * 60 * 1000 + 30 * 60 * 1000
+          ).toISOString(), // Tomorrow + 30 min
           status: 'available',
           created_at: new Date().toISOString(),
         },
         {
           id: '123e4567-e89b-12d3-a456-426614174001',
-          start_time: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // Day after tomorrow
-          end_time: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000).toISOString(), // Day after tomorrow + 30 min
+          start_time: new Date(
+            Date.now() + 2 * 24 * 60 * 60 * 1000
+          ).toISOString(), // Day after tomorrow
+          end_time: new Date(
+            Date.now() + 2 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000
+          ).toISOString(), // Day after tomorrow + 30 min
           status: 'available',
           created_at: new Date().toISOString(),
         },
       ];
 
-      const response: TimeSlot[] = mockTimeSlots.map(slot => ({
+      const response: ApiTimeSlot[] = mockTimeSlots.map(slot => ({
         id: slot.id,
         start_time: slot.start_time,
         end_time: slot.end_time,
@@ -106,7 +123,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform the data to match the API contract
-    const response: TimeSlot[] =
+    const response: ApiTimeSlot[] =
       timeSlots?.map(slot => ({
         id: slot.id,
         start_time: slot.start_time,

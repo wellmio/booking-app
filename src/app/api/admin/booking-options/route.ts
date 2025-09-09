@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
     const incomingToken = authHeader.startsWith('Bearer ')
       ? authHeader.substring(7)
       : '';
-    
+
     // Check if we're using mock Supabase (for testing)
     const isMockMode =
       process.env.NODE_ENV === 'test' ||
@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
       incomingToken === (process.env.TEST_ADMIN_TOKEN || 'mock-admin-token') ||
       process.env.NEXT_PUBLIC_SUPABASE_URL === 'https://mock.supabase.co' ||
       !process.env.NEXT_PUBLIC_SUPABASE_URL;
-    
+
     if (isMockMode && isAdmin) {
       // Return dynamic mock options from in-memory store
       return NextResponse.json(Array.from(mockOptionsStore.values()), {
@@ -199,7 +199,7 @@ export async function PUT(request: NextRequest) {
     const incomingToken = authHeader.startsWith('Bearer ')
       ? authHeader.substring(7)
       : '';
-    
+
     // Check if we're using mock Supabase (for testing)
     const isMockMode =
       process.env.NODE_ENV === 'test' ||
@@ -208,7 +208,7 @@ export async function PUT(request: NextRequest) {
       incomingToken === (process.env.TEST_ADMIN_TOKEN || 'mock-admin-token') ||
       process.env.NEXT_PUBLIC_SUPABASE_URL === 'https://mock.supabase.co' ||
       !process.env.NEXT_PUBLIC_SUPABASE_URL;
-    
+
     // Enforce Content-Type header for admin updates (both mock and real)
     const ct = request.headers.get('content-type') || '';
     if (!ct.toLowerCase().includes('application/json')) {
@@ -416,7 +416,10 @@ export async function PUT(request: NextRequest) {
         .maybeSingle();
 
       if (fetchByNameError) {
-        console.error('Error fetching booking option by name:', fetchByNameError);
+        console.error(
+          'Error fetching booking option by name:',
+          fetchByNameError
+        );
         return NextResponse.json(
           { error: 'Failed to fetch booking option' },
           { status: 500 }
@@ -432,7 +435,10 @@ export async function PUT(request: NextRequest) {
           .single();
 
         if (updateByNameError) {
-          console.error('Error updating booking option by name:', updateByNameError);
+          console.error(
+            'Error updating booking option by name:',
+            updateByNameError
+          );
           return NextResponse.json(
             { error: 'Failed to update booking option' },
             { status: 500 }

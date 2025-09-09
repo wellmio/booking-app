@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { TimeSlot, BookingRequest } from '@/lib/db/schema';
 
-interface BookingPageProps {}
+type BookingPageProps = Record<string, never>;
 
 export default function BookingPage({}: BookingPageProps) {
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);

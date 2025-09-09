@@ -26,11 +26,11 @@ describe('POST /api/bookings', () => {
     // First, get a real time slot ID from the database
     const timeslotsResponse = await fetch(`${baseUrl}/api/timeslots`);
     const timeslots = await timeslotsResponse.json();
-    
+
     if (timeslots.length === 0) {
       throw new Error('No time slots available for testing');
     }
-    
+
     const bookingRequest = {
       time_slot_id: timeslots[0].id, // Use real UUID from database
       email: 'test@example.com',
@@ -170,11 +170,11 @@ describe('POST /api/bookings', () => {
     // First, get a real time slot ID from the database
     const timeslotsResponse = await fetch(`${baseUrl}/api/timeslots`);
     const timeslots = await timeslotsResponse.json();
-    
+
     if (timeslots.length === 0) {
       throw new Error('No time slots available for testing');
     }
-    
+
     // First, create a booking
     const bookingRequest = {
       time_slot_id: timeslots[0].id, // Use real UUID from database
@@ -226,11 +226,11 @@ describe('POST /api/bookings', () => {
     // First, get a real time slot ID from the database
     const timeslotsResponse = await fetch(`${baseUrl}/api/timeslots`);
     const timeslots = await timeslotsResponse.json();
-    
+
     if (timeslots.length === 0) {
       throw new Error('No time slots available for testing');
     }
-    
+
     const bookingRequest = {
       time_slot_id: timeslots[0].id, // Use real UUID from database
       email: 'test@example.com',

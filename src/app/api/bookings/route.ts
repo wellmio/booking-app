@@ -4,6 +4,7 @@ import {
   BookingRequest,
   BookingResponse,
   PaymentStatus,
+  TimeSlot,
   UserInsert,
   AppointmentInsert,
 } from '@/lib/db/schema';
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
     let body: BookingRequest;
     try {
       body = (await request.json()) as BookingRequest;
-    } catch (parseErr) {
+    } catch {
       try {
         const text = await request.text();
         body = JSON.parse(text);
@@ -55,8 +56,6 @@ export async function POST(request: NextRequest) {
       process.env.NODE_ENV === 'test' ||
       process.env.NEXT_PUBLIC_SUPABASE_URL === 'https://mock.supabase.co' ||
       !process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const hasJsonContentType =
-      (request.headers.get('content-type') || '').toLowerCase().includes('application/json');
 
     if (isMockMode) {
       // Validate required fields
@@ -70,11 +69,15 @@ export async function POST(request: NextRequest) {
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(body.email)) {
-        return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'Invalid email format' },
+          { status: 400 }
+        );
       }
 
       // Validate UUID (accept hex based v-any)
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const uuidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (!uuidRegex.test(body.time_slot_id)) {
         return NextResponse.json(
           { error: 'Invalid time_slot_id format' },
@@ -83,7 +86,8 @@ export async function POST(request: NextRequest) {
       }
 
       // Special-case: simulate payment failure email but keep slot available while returning success
-      const simulatePaymentFailure = body.email === 'payment-fail-test@example.com';
+      const simulatePaymentFailure =
+        body.email === 'payment-fail-test@example.com';
 
       cleanupExpiredBookedSlots();
       if (!simulatePaymentFailure) {
@@ -97,9 +101,15 @@ export async function POST(request: NextRequest) {
         try {
           if (bookedSlotIdToExpiryMs.has(body.time_slot_id)) {
             // Allow one additional booking for missing Content-Type test by refreshing TTL once
-            bookedSlotIdToExpiryMs.set(body.time_slot_id, Date.now() + BOOKED_TTL_MS);
+            bookedSlotIdToExpiryMs.set(
+              body.time_slot_id,
+              Date.now() + BOOKED_TTL_MS
+            );
           } else {
-            bookedSlotIdToExpiryMs.set(body.time_slot_id, Date.now() + BOOKED_TTL_MS);
+            bookedSlotIdToExpiryMs.set(
+              body.time_slot_id,
+              Date.now() + BOOKED_TTL_MS
+            );
           }
         } finally {
           inFlightSlotIds.delete(body.time_slot_id);
@@ -111,10 +121,12 @@ export async function POST(request: NextRequest) {
         time_slot: {
           id: body.time_slot_id,
           start_time: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-          end_time: new Date(Date.now() + 24 * 60 * 60 * 1000 + 30 * 60 * 1000).toISOString(),
+          end_time: new Date(
+            Date.now() + 24 * 60 * 60 * 1000 + 30 * 60 * 1000
+          ).toISOString(),
           status: simulatePaymentFailure ? 'available' : 'booked',
           created_at: new Date().toISOString(),
-        } as any,
+        },
         payment_status: 'succeeded',
       };
 
@@ -176,7 +188,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Atomic guard: for normal bookings, mark the slot as booked only if currently available
-    const simulatePaymentFailure = body.email === 'payment-fail-test@example.com';
+    const simulatePaymentFailure =
+      body.email === 'payment-fail-test@example.com';
     let lockedTimeSlot = timeSlot;
     if (!simulatePaymentFailure) {
       const { data: locked, error: lockErr } = await supabase
@@ -193,15 +206,17 @@ export async function POST(request: NextRequest) {
           { status: 409 }
         );
       }
-      lockedTimeSlot = locked as any;
+      lockedTimeSlot = locked as TimeSlot;
     }
 
     // Find or create user
-    let { data: user, error: userError } = await supabase
+    const { data: fetchedUser, error: userError } = await supabase
       .from('users')
       .select('*')
       .eq('email', body.email)
       .single();
+
+    let user = fetchedUser;
 
     if (userError && userError.code === 'PGRST116') {
       // User doesn't exist, create new user

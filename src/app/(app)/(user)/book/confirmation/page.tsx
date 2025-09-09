@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { BookingResponse } from '@/lib/db/schema';
 
-export default function BookingConfirmationPage() {
+function BookingConfirmationInner() {
   const searchParams = useSearchParams();
   const bookingId = searchParams.get('bookingId');
 
@@ -33,6 +33,8 @@ export default function BookingConfirmationPage() {
             end_time: new Date(
               Date.now() + 24 * 60 * 60 * 1000 + 30 * 60 * 1000
             ).toISOString(), // Tomorrow + 30 min
+            status: 'booked',
+            created_at: new Date().toISOString(),
           },
           payment_status: 'succeeded',
         });
@@ -256,5 +258,19 @@ export default function BookingConfirmationPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function BookingConfirmationPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          Loading booking confirmation...
+        </div>
+      }
+    >
+      <BookingConfirmationInner />
+    </Suspense>
   );
 }
