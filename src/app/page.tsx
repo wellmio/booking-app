@@ -1,102 +1,96 @@
-import Image from 'next/image';
-
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{' '}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-[#FFFFFF] text-[#333333]">
+      {/* Header */}
+      <header className="w-full border-b border-[#ececec] bg-white">
+        <div className="max-w-[1400px] mx-auto w-[90%] py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src="/images/logo.jpg" alt="Wellmio" className="h-[42px] w-auto" />
+          </div>
+          <nav className="flex items-center gap-6 text-sm">
+            <a href="#about" className="hover:underline">About</a>
+            <a href="#features" className="hover:underline">Features</a>
+            <a href="#how-it-works" className="hover:underline">How it works</a>
+            <a href="#team" className="hover:underline">Team</a>
+            <a href="#contact" className="hover:underline">Contact</a>
+            <a href="/book" className="inline-block bg-[#D8794F] text-white px-4 py-2 rounded-full font-semibold hover:bg-[#c76b40]">Book now</a>
+          </nav>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </header>
+
+      {/* Hero */}
+      <section className="relative min-h-[600px] flex items-center" id="hero">
+        <div className="absolute inset-0 bg-[url('/images/hero.jpg')] bg-cover bg-center" />
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="relative z-10 max-w-[1400px] mx-auto w-[90%] py-24">
+          <h1 className="text-white text-4xl md:text-6xl font-bold drop-shadow">Your Private Oasis Awaits.</h1>
+          <p className="text-white/95 text-lg md:text-2xl mt-4 max-w-[600px] drop-shadow">
+            Premium massage chairs. Seamless access. Pure relaxation when you want it.
+          </p>
+          <div className="mt-8 flex gap-4">
+            <a href="#contact" className="inline-block bg-[#D8794F] text-white px-6 py-3 rounded-full font-semibold hover:bg-[#c76b40]">Join the Waitlist</a>
+            <a href="/book" className="inline-block bg-white text-[#333333] px-6 py-3 rounded-full font-semibold hover:bg-[#f3f3f3]">Book now</a>
+          </div>
+        </div>
+      </section>
+
+      {/* About */}
+      <section id="about" className="py-16 bg-[#f1d4af] text-center">
+        <div className="max-w-[960px] mx-auto w-[90%]">
+          <h2 className="text-3xl font-bold text-[#737D6F] mb-6">Escape the Everyday with Wellmio</h2>
+          <p className="max-w-[700px] mx-auto mb-4">
+            Wellmio is reimagining personal wellness. We provide serene, private studios equipped with state-of-the-art massage chairs, accessible seamlessly through our intuitive web app.
+          </p>
+          <p className="max-w-[700px] mx-auto">
+            Our mission is to make premium relaxation accessible and convenient, blending cutting-edge technology with a deep understanding of your need for peace and comfort.
+          </p>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section id="features" className="py-16">
+        <div className="max-w-[960px] mx-auto w-[90%] text-center">
+          <h2 className="text-3xl font-bold text-[#737D6F] mb-6">Why You'll Love Wellmio</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="text-3xl text-[#d26d3e] mb-3">📱</div>
+              <h3 className="text-[#d26d3e] font-semibold mb-2">Seamless & Contactless</h3>
+              <p>Access your private massage session effortlessly. Open the door, select your program, and relax.</p>
+            </div>
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="text-3xl text-[#d26d3e] mb-3">🛋️</div>
+              <h3 className="text-[#d26d3e] font-semibold mb-2">Premium Comfort</h3>
+              <p>Top-of-the-line massage chairs offering programs tailored to your needs.</p>
+            </div>
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="text-3xl text-[#d26d3e] mb-3">⏰</div>
+              <h3 className="text-[#d26d3e] font-semibold mb-2">On Your Schedule</h3>
+              <p>Whether a quick refresh or a longer unwind, Wellmio is available when you are.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section id="contact" className="py-16 bg-[#f1d4af] text-center">
+        <div className="max-w-[960px] mx-auto w-[90%]">
+          <h2 className="text-3xl font-bold text-[#737D6F] mb-4">Be the First to Experience Wellmio</h2>
+          <p className="mb-6">We're launching soon! Enter your email to get updates.</p>
+          <form className="max-w-[400px] mx-auto grid grid-cols-1 gap-3">
+            <input type="email" className="w-full px-4 py-3 rounded-full border-2 border-[#b2bb73]" placeholder="Enter your email" />
+            <button className="w-full inline-block bg-[#D8794F] text-white px-6 py-3 rounded-full font-semibold hover:bg-[#c76b40]">Keep Me Informed</button>
+          </form>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-[#687258] text-[#f1d4af] text-center py-8">
+        <div className="max-w-[960px] mx-auto w-[90%]">
+          <p>
+            Write us at <a className="underline" href="mailto:hey@wellmio.se">hey@wellmio.se</a>
+          </p>
+          <p>© {new Date().getFullYear()} Wellmio. All Rights Reserved.</p>
+        </div>
       </footer>
     </div>
   );
