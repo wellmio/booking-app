@@ -15,6 +15,7 @@ tests/
 ## Test Categories
 
 ### Contract Tests (T009-T012)
+
 These tests verify that API endpoints conform to their OpenAPI specifications:
 
 - **T009**: `GET /api/timeslots` - Tests time slot retrieval
@@ -23,6 +24,7 @@ These tests verify that API endpoints conform to their OpenAPI specifications:
 - **T012**: `PUT /api/admin/booking-options` - Tests admin option updates
 
 ### Integration Tests (T013-T014)
+
 These tests verify complete user flows:
 
 - **T013**: User Booking Flow - Complete booking process from time slot selection to confirmation
@@ -31,6 +33,7 @@ These tests verify complete user flows:
 ## Running Tests
 
 ### Prerequisites
+
 1. Install dependencies: `npm install`
 2. Set up environment variables (see `.env.template`)
 
@@ -64,6 +67,7 @@ TEST_ADMIN_TOKEN=your-admin-token-here
 ## Test Philosophy
 
 ### TDD Approach
+
 These tests are designed to **FAIL** initially, following the Red-Green-Refactor cycle:
 
 1. **Red**: Write failing tests (current state)
@@ -71,6 +75,7 @@ These tests are designed to **FAIL** initially, following the Red-Green-Refactor
 3. **Refactor**: Improve code while keeping tests green
 
 ### Test Requirements
+
 - All tests must be written before implementation
 - Tests must fail initially (proving they work)
 - Tests must be comprehensive and cover edge cases
@@ -79,9 +84,11 @@ These tests are designed to **FAIL** initially, following the Red-Green-Refactor
 ## Expected Test Results
 
 ### Current State (Phase 3.2)
+
 All tests should **FAIL** because the endpoints are not yet implemented. This is expected and correct for TDD.
 
 ### After Implementation (Phase 3.3+)
+
 Tests should pass once the corresponding endpoints are implemented.
 
 ## Test Data

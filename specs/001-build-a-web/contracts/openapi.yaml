@@ -1,0 +1,105 @@
+openapi: 3.0.0
+info:
+  title: Wellmio Booking API
+  version: 1.0.0
+paths:
+  /api/timeslots:
+    get:
+      summary: Get available time slots
+      responses:
+        '200':
+          description: A list of available time slots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeSlot'
+  /api/bookings:
+    post:
+      summary: Create a new booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingRequest'
+      responses:
+        '200':
+          description: The created booking
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+  /api/admin/booking-options:
+    get:
+      summary: Get all booking options
+      responses:
+        '200':
+          description: A list of booking options
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookingOption'
+    put:
+      summary: Update a booking option
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingOption'
+      responses:
+        '200':
+          description: The updated booking option
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingOption'
+
+components:
+  schemas:
+    TimeSlot:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+    BookingRequest:
+      type: object
+      properties:
+        time_slot_id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+    Booking:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        time_slot:
+          $ref: '#/components/schemas/TimeSlot'
+        payment_status:
+          type: string
+          enum: [pending, succeeded, failed]
+    BookingOption:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        value:
+          type: string

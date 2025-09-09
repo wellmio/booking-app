@@ -1,11 +1,18 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
+import {
+  describe,
+  it,
+  expect,
+  beforeAll,
+  afterAll,
+  beforeEach,
+} from '@jest/globals';
 
 /**
  * Integration Test for Admin Management Flow
- * 
+ *
  * This test verifies the complete admin management flow as described in quickstart.md.
  * It should FAIL until the full implementation is complete.
- * 
+ *
  * Based on quickstart.md Admin Management Flow:
  * 1. Admin user navigates to admin login page
  * 2. Admin logs in with credentials
@@ -50,15 +57,20 @@ describe('Admin Management Flow Integration', () => {
       // This would be a frontend page, but we'll test the API endpoints
 
       // Step 4: Admin sees list of current booking options
-      const getOptionsResponse = await fetch(`${baseUrl}/api/admin/booking-options`, {
-        headers: {
-          'Authorization': `Bearer ${adminAuthToken}`,
-        },
-      });
+      const getOptionsResponse = await fetch(
+        `${baseUrl}/api/admin/booking-options`,
+        {
+          headers: {
+            Authorization: `Bearer ${adminAuthToken}`,
+          },
+        }
+      );
 
       // This test should FAIL until the endpoint is implemented
       expect(getOptionsResponse.status).toBe(200);
-      expect(getOptionsResponse.headers.get('content-type')).toContain('application/json');
+      expect(getOptionsResponse.headers.get('content-type')).toContain(
+        'application/json'
+      );
 
       const bookingOptions = await getOptionsResponse.json();
       expect(Array.isArray(bookingOptions)).toBe(true);
@@ -71,17 +83,20 @@ describe('Admin Management Flow Integration', () => {
         const newOption = {
           id: '123e4567-e89b-12d3-a456-426614174000',
           name: 'price',
-          value: '50.00'
+          value: '50.00',
         };
 
-        const createResponse = await fetch(`${baseUrl}/api/admin/booking-options`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${adminAuthToken}`,
-          },
-          body: JSON.stringify(newOption),
-        });
+        const createResponse = await fetch(
+          `${baseUrl}/api/admin/booking-options`,
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${adminAuthToken}`,
+            },
+            body: JSON.stringify(newOption),
+          }
+        );
 
         expect(createResponse.status).toBe(200);
         const createdOption = await createResponse.json();
@@ -92,17 +107,20 @@ describe('Admin Management Flow Integration', () => {
       const updatedOption = {
         id: testBookingOptionId,
         name: 'price',
-        value: '75.00' // Updated price
+        value: '75.00', // Updated price
       };
 
-      const updateResponse = await fetch(`${baseUrl}/api/admin/booking-options`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${adminAuthToken}`,
-        },
-        body: JSON.stringify(updatedOption),
-      });
+      const updateResponse = await fetch(
+        `${baseUrl}/api/admin/booking-options`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${adminAuthToken}`,
+          },
+          body: JSON.stringify(updatedOption),
+        }
+      );
 
       expect(updateResponse.status).toBe(200);
       const updatedOptionResponse = await updateResponse.json();
@@ -110,41 +128,54 @@ describe('Admin Management Flow Integration', () => {
 
       // Step 6: New option is reflected in user booking flow
       // We verify the option was updated by fetching it again
-      const verifyResponse = await fetch(`${baseUrl}/api/admin/booking-options`, {
-        headers: {
-          'Authorization': `Bearer ${adminAuthToken}`,
-        },
-      });
+      const verifyResponse = await fetch(
+        `${baseUrl}/api/admin/booking-options`,
+        {
+          headers: {
+            Authorization: `Bearer ${adminAuthToken}`,
+          },
+        }
+      );
 
       expect(verifyResponse.status).toBe(200);
       const allOptions = await verifyResponse.json();
-      const updatedOptionInList = allOptions.find((option: any) => option.id === testBookingOptionId);
-      
+      const updatedOptionInList = allOptions.find(
+        (option: any) => option.id === testBookingOptionId
+      );
+
       expect(updatedOptionInList).toBeDefined();
       expect(updatedOptionInList.value).toBe('75.00');
     });
 
     it('should handle admin authentication flow', async () => {
       // Test successful authentication
-      const validAuthResponse = await fetch(`${baseUrl}/api/admin/booking-options`, {
-        headers: {
-          'Authorization': `Bearer ${adminAuthToken}`,
-        },
-      });
+      const validAuthResponse = await fetch(
+        `${baseUrl}/api/admin/booking-options`,
+        {
+          headers: {
+            Authorization: `Bearer ${adminAuthToken}`,
+          },
+        }
+      );
 
       expect(validAuthResponse.status).toBe(200);
 
       // Test failed authentication
-      const invalidAuthResponse = await fetch(`${baseUrl}/api/admin/booking-options`, {
-        headers: {
-          'Authorization': 'Bearer invalid-token',
-        },
-      });
+      const invalidAuthResponse = await fetch(
+        `${baseUrl}/api/admin/booking-options`,
+        {
+          headers: {
+            Authorization: 'Bearer invalid-token',
+          },
+        }
+      );
 
       expect(invalidAuthResponse.status).toBe(401);
 
       // Test missing authentication
-      const noAuthResponse = await fetch(`${baseUrl}/api/admin/booking-options`);
+      const noAuthResponse = await fetch(
+        `${baseUrl}/api/admin/booking-options`
+      );
       expect(noAuthResponse.status).toBe(401);
     });
 
@@ -153,7 +184,7 @@ describe('Admin Management Flow Integration', () => {
         { name: 'price', value: '50.00' },
         { name: 'duration_minutes', value: '30' },
         { name: 'max_bookings_per_day', value: '10' },
-        { name: 'booking_window_days', value: '7' }
+        { name: 'booking_window_days', value: '7' },
       ];
 
       // Create multiple options
@@ -161,14 +192,14 @@ describe('Admin Management Flow Integration', () => {
         const optionData = {
           id: `123e4567-e89b-12d3-a456-42661417400${testOptions.indexOf(option)}`,
           name: option.name,
-          value: option.value
+          value: option.value,
         };
 
         const response = await fetch(`${baseUrl}/api/admin/booking-options`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${adminAuthToken}`,
+            Authorization: `Bearer ${adminAuthToken}`,
           },
           body: JSON.stringify(optionData),
         });
@@ -180,18 +211,23 @@ describe('Admin Management Flow Integration', () => {
       }
 
       // Verify all options exist
-      const getAllResponse = await fetch(`${baseUrl}/api/admin/booking-options`, {
-        headers: {
-          'Authorization': `Bearer ${adminAuthToken}`,
-        },
-      });
+      const getAllResponse = await fetch(
+        `${baseUrl}/api/admin/booking-options`,
+        {
+          headers: {
+            Authorization: `Bearer ${adminAuthToken}`,
+          },
+        }
+      );
 
       expect(getAllResponse.status).toBe(200);
       const allOptions = await getAllResponse.json();
-      
+
       // Verify all test options are present
       for (const testOption of testOptions) {
-        const foundOption = allOptions.find((option: any) => option.name === testOption.name);
+        const foundOption = allOptions.find(
+          (option: any) => option.name === testOption.name
+        );
         expect(foundOption).toBeDefined();
         expect(foundOption.value).toBe(testOption.value);
       }
@@ -209,14 +245,14 @@ describe('Admin Management Flow Integration', () => {
         const optionData = {
           id: '123e4567-e89b-12d3-a456-426614174000',
           name: invalidOption.name,
-          value: invalidOption.value
+          value: invalidOption.value,
         };
 
         const response = await fetch(`${baseUrl}/api/admin/booking-options`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${adminAuthToken}`,
+            Authorization: `Bearer ${adminAuthToken}`,
           },
           body: JSON.stringify(optionData),
         });
@@ -231,18 +267,21 @@ describe('Admin Management Flow Integration', () => {
       const baseOption = {
         id: '123e4567-e89b-12d3-a456-426614174000',
         name: 'price',
-        value: '50.00'
+        value: '50.00',
       };
 
       // Create initial option
-      const createResponse = await fetch(`${baseUrl}/api/admin/booking-options`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${adminAuthToken}`,
-        },
-        body: JSON.stringify(baseOption),
-      });
+      const createResponse = await fetch(
+        `${baseUrl}/api/admin/booking-options`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${adminAuthToken}`,
+          },
+          body: JSON.stringify(baseOption),
+        }
+      );
 
       expect(createResponse.status).toBe(200);
 
@@ -252,43 +291,48 @@ describe('Admin Management Flow Integration', () => {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${adminAuthToken}`,
+            Authorization: `Bearer ${adminAuthToken}`,
           },
           body: JSON.stringify({
             ...baseOption,
-            value: '60.00'
+            value: '60.00',
           }),
         }),
         fetch(`${baseUrl}/api/admin/booking-options`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${adminAuthToken}`,
+            Authorization: `Bearer ${adminAuthToken}`,
           },
           body: JSON.stringify({
             ...baseOption,
-            value: '70.00'
+            value: '70.00',
           }),
         }),
       ];
 
       const responses = await Promise.all(updatePromises);
-      
+
       // Both updates should succeed (last write wins)
       expect(responses[0].status).toBe(200);
       expect(responses[1].status).toBe(200);
 
       // Verify the final state
-      const finalResponse = await fetch(`${baseUrl}/api/admin/booking-options`, {
-        headers: {
-          'Authorization': `Bearer ${adminAuthToken}`,
-        },
-      });
+      const finalResponse = await fetch(
+        `${baseUrl}/api/admin/booking-options`,
+        {
+          headers: {
+            Authorization: `Bearer ${adminAuthToken}`,
+          },
+        }
+      );
 
       expect(finalResponse.status).toBe(200);
       const allOptions = await finalResponse.json();
-      const priceOption = allOptions.find((option: any) => option.name === 'price');
-      
+      const priceOption = allOptions.find(
+        (option: any) => option.name === 'price'
+      );
+
       expect(priceOption).toBeDefined();
       // The final value should be one of the concurrent updates
       expect(['60.00', '70.00']).toContain(priceOption.value);
@@ -298,7 +342,7 @@ describe('Admin Management Flow Integration', () => {
       // Test that admin authentication persists across requests
       const firstRequest = await fetch(`${baseUrl}/api/admin/booking-options`, {
         headers: {
-          'Authorization': `Bearer ${adminAuthToken}`,
+          Authorization: `Bearer ${adminAuthToken}`,
         },
       });
 
@@ -307,20 +351,26 @@ describe('Admin Management Flow Integration', () => {
       // Wait a moment to simulate time passing
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      const secondRequest = await fetch(`${baseUrl}/api/admin/booking-options`, {
-        headers: {
-          'Authorization': `Bearer ${adminAuthToken}`,
-        },
-      });
+      const secondRequest = await fetch(
+        `${baseUrl}/api/admin/booking-options`,
+        {
+          headers: {
+            Authorization: `Bearer ${adminAuthToken}`,
+          },
+        }
+      );
 
       expect(secondRequest.status).toBe(200);
 
       // Test expired token handling
-      const expiredTokenResponse = await fetch(`${baseUrl}/api/admin/booking-options`, {
-        headers: {
-          'Authorization': 'Bearer expired-token',
-        },
-      });
+      const expiredTokenResponse = await fetch(
+        `${baseUrl}/api/admin/booking-options`,
+        {
+          headers: {
+            Authorization: 'Bearer expired-token',
+          },
+        }
+      );
 
       expect(expiredTokenResponse.status).toBe(401);
     });
@@ -329,48 +379,60 @@ describe('Admin Management Flow Integration', () => {
       // Test that only admin users can access admin endpoints
       const regularUserToken = 'regular-user-token';
 
-      const regularUserResponse = await fetch(`${baseUrl}/api/admin/booking-options`, {
-        headers: {
-          'Authorization': `Bearer ${regularUserToken}`,
-        },
-      });
+      const regularUserResponse = await fetch(
+        `${baseUrl}/api/admin/booking-options`,
+        {
+          headers: {
+            Authorization: `Bearer ${regularUserToken}`,
+          },
+        }
+      );
 
       // Should return forbidden for non-admin users
       expect(regularUserResponse.status).toBe(403);
 
       // Test admin-only operations
-      const adminOnlyResponse = await fetch(`${baseUrl}/api/admin/booking-options`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${regularUserToken}`,
-        },
-        body: JSON.stringify({
-          id: '123e4567-e89b-12d3-a456-426614174000',
-          name: 'price',
-          value: '50.00'
-        }),
-      });
+      const adminOnlyResponse = await fetch(
+        `${baseUrl}/api/admin/booking-options`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${regularUserToken}`,
+          },
+          body: JSON.stringify({
+            id: '123e4567-e89b-12d3-a456-426614174000',
+            name: 'price',
+            value: '50.00',
+          }),
+        }
+      );
 
       expect(adminOnlyResponse.status).toBe(403);
     });
 
     it('should handle admin logout and session cleanup', async () => {
       // Test that admin can access endpoints when logged in
-      const loggedInResponse = await fetch(`${baseUrl}/api/admin/booking-options`, {
-        headers: {
-          'Authorization': `Bearer ${adminAuthToken}`,
-        },
-      });
+      const loggedInResponse = await fetch(
+        `${baseUrl}/api/admin/booking-options`,
+        {
+          headers: {
+            Authorization: `Bearer ${adminAuthToken}`,
+          },
+        }
+      );
 
       expect(loggedInResponse.status).toBe(200);
 
       // Simulate logout by using invalid token
-      const loggedOutResponse = await fetch(`${baseUrl}/api/admin/booking-options`, {
-        headers: {
-          'Authorization': 'Bearer logged-out-token',
-        },
-      });
+      const loggedOutResponse = await fetch(
+        `${baseUrl}/api/admin/booking-options`,
+        {
+          headers: {
+            Authorization: 'Bearer logged-out-token',
+          },
+        }
+      );
 
       expect(loggedOutResponse.status).toBe(401);
     });
