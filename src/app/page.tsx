@@ -71,6 +71,56 @@ export default function Home() {
         </div>
       </section>
 
+      {/* How it works */}
+      <section id="how-it-works" className="py-16">
+        <div className="max-w-[1000px] mx-auto w-[90%] text-center">
+          <h2 className="text-3xl font-bold text-[#737D6F] mb-12">Simple Steps to Serenity</h2>
+          <div className="flex flex-col items-center gap-12">
+            {[{
+              icon: '📲', title: '1. Download the App', desc: 'Get the Wellmio app and sign up easily.'
+            }, {
+              icon: '📍', title: '2. Check Availability', desc: 'Locate a Wellmio studio near you and see real-time chair availability.'
+            }, {
+              icon: '🔓', title: '3. Unlock & Enter', desc: 'Use the app to unlock the studio door.'
+            }, {
+              icon: '▶️', title: '4. Select & Relax', desc: 'Choose your preferred massage program via the app and let the chair do the rest.'
+            }, {
+              icon: '💳', title: '5. Pay Seamlessly', desc: 'Payment is handled securely through the app after your session.'
+            }].map((s, i) => (
+              <div key={i} className={`flex items-center gap-6 w-full max-w-[700px] ${i % 2 === 1 ? 'flex-row-reverse text-right' : ''}`}>
+                <div className="bg-[#d26d3e] text-white w-[60px] h-[60px] rounded-full flex items-center justify-center text-2xl flex-shrink-0">{s.icon}</div>
+                <div className="flex-1">
+                  <h3 className="text-[#687258] font-semibold mb-1">{s.title}</h3>
+                  <p className="text-[#333333]">{s.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Team */}
+      <section id="team" className="py-16 bg-[#f1d4af]">
+        <div className="max-w-[960px] mx-auto w-[90%] text-center">
+          <h2 className="text-3xl font-bold text-[#737D6F] mb-4">Meet the Team</h2>
+          <p className="max-w-[600px] mx-auto mb-8">We're a passionate team dedicated to bringing you the ultimate relaxation experience through innovative technology and thoughtful design.</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { name: 'Joseph Le Pluart', role: 'CEO', img: '/images/team/joseph.jpeg', email: 'joseph@wellmio.se' },
+              { name: 'Melina Tsapolice', role: 'Head of Marketing', img: '/images/team/melina.jpeg', email: 'melina@wellmio.se' },
+              { name: 'Henry Bergström', role: 'CTO', img: '/images/team/henry.jpeg', email: 'henry@wellmio.se' },
+            ].map(m => (
+              <div key={m.email} className="bg-white rounded-lg shadow p-6 text-center">
+                <img src={m.img} alt={m.name} className="w-[120px] h-[120px] rounded-full object-cover mx-auto mb-4 border-4 border-[#d26d3e]" />
+                <h3 className="text-[#687258] font-semibold">{m.name}</h3>
+                <div className="text-[#d26d3e] font-medium mb-2">{m.role}</div>
+                <p className="text-[#333333] text-sm mb-3">{m.role === 'CEO' ? 'Passionate about wellness technology and creating seamless user experiences.' : m.role === 'Head of Marketing' ? 'Marketing strategist focused on building the Wellmio brand.' : 'Tech innovator focused on scalable solutions for wellness.'}</p>
+                <a href={`mailto:${m.email}`} className="text-[#d26d3e] underline">{m.email}</a>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
       {/* CTA */}
       <section id="contact" className="py-16 bg-[#f1d4af] text-center">
         <div className="max-w-[960px] mx-auto w-[90%]">

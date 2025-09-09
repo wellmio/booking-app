@@ -12,6 +12,13 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
+const montserratAlternates = Montserrat_Alternates({
+  variable: '--font-mont',
+  subsets: ['latin'],
+  weight: ['400', '600', '700'],
+  display: 'swap',
+});
+
 export const metadata: Metadata = {
   title: 'Wellmio - Your Private Oasis of Relaxation',
   description:
@@ -26,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${montserratAlternates.variable} antialiased`}
       >
         {children}
       </body>
