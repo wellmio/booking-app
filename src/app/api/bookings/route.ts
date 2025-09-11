@@ -12,6 +12,7 @@ import {
 declare global {
   var bookedTimeslots: Set<string> | undefined;
   var lastResetTime: number | undefined;
+  var adminTimeslots: TimeSlot[] | undefined;
 }
 
 // Initialize Supabase client
@@ -163,37 +164,41 @@ export async function POST(request: NextRequest) {
       // Mark this timeslot as booked for future requests
       global.bookedTimeslots.add(body.timeslot_id);
     } else {
-      // Production: validate timeslot from database, fallback to mock data if DB unavailable
-      // Initialize global state for production fallback
+      // Production: validate timeslot from database, fallback to shared store if DB unavailable
+      // Initialize global stores
       global.bookedTimeslots = global.bookedTimeslots || new Set();
+      global.adminTimeslots = global.adminTimeslots || [];
 
-      // Always use mock data in development when database is not available
-      const mockTimeslots = [
-        {
-          id: '123e4567-e89b-12d3-a456-426614174000',
-          start_time: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-          end_time: new Date(
-            Date.now() + 24 * 60 * 60 * 1000 + 30 * 60 * 1000
-          ).toISOString(),
-          is_booked: global.bookedTimeslots.has(
-            '123e4567-e89b-12d3-a456-426614174000'
-          ),
-        },
-        {
-          id: '123e4567-e89b-12d3-a456-426614174001',
-          start_time: new Date(
-            Date.now() + 2 * 24 * 60 * 60 * 1000
-          ).toISOString(),
-          end_time: new Date(
-            Date.now() + 2 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000
-          ).toISOString(),
-          is_booked: global.bookedTimeslots.has(
-            '123e4567-e89b-12d3-a456-426614174001'
-          ),
-        },
-      ];
+      // Initialize with default timeslots if store is empty
+      if (global.adminTimeslots.length === 0) {
+        global.adminTimeslots = [
+          {
+            id: '123e4567-e89b-12d3-a456-426614174000',
+            start_time: new Date(
+              Date.now() + 24 * 60 * 60 * 1000
+            ).toISOString(),
+            end_time: new Date(
+              Date.now() + 24 * 60 * 60 * 1000 + 30 * 60 * 1000
+            ).toISOString(),
+            is_booked: false,
+          },
+          {
+            id: '123e4567-e89b-12d3-a456-426614174001',
+            start_time: new Date(
+              Date.now() + 2 * 24 * 60 * 60 * 1000
+            ).toISOString(),
+            end_time: new Date(
+              Date.now() + 2 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000
+            ).toISOString(),
+            is_booked: false,
+          },
+        ];
+      }
 
-      timeSlot = mockTimeslots.find(slot => slot.id === body.timeslot_id);
+      // Always use shared admin timeslots store in development
+      timeSlot = global.adminTimeslots.find(
+        slot => slot.id === body.timeslot_id
+      );
 
       if (!timeSlot) {
         return NextResponse.json(
@@ -202,7 +207,7 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      if (timeSlot.is_booked) {
+      if (timeSlot.is_booked || global.bookedTimeslots.has(body.timeslot_id)) {
         return NextResponse.json(
           { error: 'Time slot is already booked' },
           { status: 409 }
@@ -211,6 +216,7 @@ export async function POST(request: NextRequest) {
 
       // Mark this timeslot as booked for future requests
       global.bookedTimeslots.add(body.timeslot_id);
+      timeSlot.is_booked = true;
     }
 
     // 3. Create a pending booking and Stripe session

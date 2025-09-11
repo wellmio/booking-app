@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { TimeSlot } from '@/lib/db/schema';
 
+// Global type declaration for shared timeslots store
+declare global {
+  var adminTimeslots: TimeSlot[] | undefined;
+}
+
+// Simple UUID generator for mock data (creates valid UUIDs)
+function generateMockUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/[x]/g, function () {
+    return ((Math.random() * 16) | 0).toString(16);
+  });
+}
+
 // Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -114,13 +126,19 @@ export async function POST(request: NextRequest) {
       incomingToken === (process.env.TEST_ADMIN_TOKEN || 'mock-admin-token');
 
     if (isTestMode) {
-      // Return mock data for tests
+      // Initialize global store
+      global.adminTimeslots = global.adminTimeslots || [];
+
+      // Create mock timeslot with proper UUID format and add to global store
       const mockTimeslot: TimeSlot = {
-        id: 'new-timeslot-id',
+        id: generateMockUUID(),
         start_time: startTime.toISOString(),
         end_time: endTime.toISOString(),
         is_booked: false,
       };
+
+      global.adminTimeslots.push(mockTimeslot);
+
       return NextResponse.json(mockTimeslot, { status: 201 });
     }
 

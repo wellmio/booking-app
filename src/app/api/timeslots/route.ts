@@ -3,6 +3,18 @@ import { createClient } from '@supabase/supabase-js';
 import { TimeSlot } from '@/lib/db/schema';
 import { Redis } from '@upstash/redis';
 
+// Global type declaration for shared timeslots store
+declare global {
+  var adminTimeslots: TimeSlot[] | undefined;
+}
+
+// Simple UUID generator for mock data (creates valid UUIDs)
+function generateMockUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/[x]/g, function () {
+    return ((Math.random() * 16) | 0).toString(16);
+  });
+}
+
 // Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://mock.supabase.co',
@@ -72,32 +84,52 @@ export async function GET(request: Request) {
 
     if (error) {
       console.log('Database error, using mock data:', error.message);
-      // Return mock data for testing
-      const mockTimeSlots: TimeSlot[] = [
-        {
-          id: '123e4567-e89b-12d3-a456-426614174000',
-          start_time: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
-          end_time: new Date(
-            Date.now() + 24 * 60 * 60 * 1000 + 30 * 60 * 1000
-          ).toISOString(), // Tomorrow + 30 min
-          is_booked: false,
-        },
-        {
-          id: '123e4567-e89b-12d3-a456-426614174001',
-          start_time: new Date(
-            Date.now() + 2 * 24 * 60 * 60 * 1000
-          ).toISOString(), // Day after tomorrow
-          end_time: new Date(
-            Date.now() + 2 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000
-          ).toISOString(), // Day after tomorrow + 30 min
-          is_booked: false,
-        },
-      ];
-      const response: ApiTimeSlot[] = mockTimeSlots.map(slot => ({
+
+      // Initialize global store with default mock data if not exists
+      if (!global.adminTimeslots) {
+        global.adminTimeslots = [
+          {
+            id: '123e4567-e89b-12d3-a456-426614174000',
+            start_time: new Date(
+              Date.now() + 24 * 60 * 60 * 1000
+            ).toISOString(), // Tomorrow
+            end_time: new Date(
+              Date.now() + 24 * 60 * 60 * 1000 + 30 * 60 * 1000
+            ).toISOString(), // Tomorrow + 30 min
+            is_booked: false,
+          },
+          {
+            id: '123e4567-e89b-12d3-a456-426614174001',
+            start_time: new Date(
+              Date.now() + 2 * 24 * 60 * 60 * 1000
+            ).toISOString(), // Day after tomorrow
+            end_time: new Date(
+              Date.now() + 2 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000
+            ).toISOString(), // Day after tomorrow + 30 min
+            is_booked: false,
+          },
+        ];
+      }
+
+      // Filter by date if provided
+      let filteredTimeslots = global.adminTimeslots;
+      if (date) {
+        const startDate = new Date(date);
+        const endDate = new Date(date);
+        endDate.setDate(startDate.getDate() + 1);
+
+        filteredTimeslots = global.adminTimeslots.filter(slot => {
+          const slotDate = new Date(slot.start_time);
+          return slotDate >= startDate && slotDate < endDate;
+        });
+      }
+
+      const response: ApiTimeSlot[] = filteredTimeslots.map(slot => ({
         id: slot.id,
         start_time: slot.start_time,
         end_time: slot.end_time,
       }));
+
       return NextResponse.json(response, {
         status: 200,
         headers: {
