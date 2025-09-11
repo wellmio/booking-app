@@ -36,7 +36,7 @@ export default function AdminLoginPage() {
         localStorage.setItem('adminToken', 'mock-admin-token');
 
         // Redirect to admin dashboard
-        router.push('/admin/options');
+        router.push('/options');
       } else {
         setError('Invalid email or password');
       }

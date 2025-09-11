@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { TimeSlot, BookingRequest } from '@/lib/db/schema';
+import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
 
 type BookingPageProps = Record<string, never>;
 
@@ -10,18 +12,24 @@ export default function BookingPage({}: BookingPageProps) {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<TimeSlot | null>(
     null
   );
-  const [email, setEmail] = useState('');
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isLoading, setIsLoading] = useState(true);
   const [isBooking, setIsBooking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Fetch available time slots
+  // Fetch available time slots for selected date
   useEffect(() => {
     const fetchTimeSlots = async () => {
+      if (!selectedDate) return;
+      
       try {
         setIsLoading(true);
-        const response = await fetch('/api/timeslots');
+        setSelectedTimeSlot(null); // Clear selection when date changes
+        
+        // Format date for API query
+        const dateString = selectedDate.toISOString().split('T')[0];
+        const response = await fetch(`/api/timeslots?date=${dateString}`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch time slots');
@@ -37,7 +45,7 @@ export default function BookingPage({}: BookingPageProps) {
     };
 
     fetchTimeSlots();
-  }, []);
+  }, [selectedDate]);
 
   // Handle time slot selection
   const handleTimeSlotSelect = (timeSlot: TimeSlot) => {
@@ -49,15 +57,8 @@ export default function BookingPage({}: BookingPageProps) {
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!selectedTimeSlot || !email) {
-      setError('Please select a time slot and enter your email');
-      return;
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('Please enter a valid email address');
+    if (!selectedTimeSlot) {
+      setError('Please select a time slot');
       return;
     }
 
@@ -66,8 +67,7 @@ export default function BookingPage({}: BookingPageProps) {
       setError(null);
 
       const bookingRequest: BookingRequest = {
-        time_slot_id: selectedTimeSlot.id,
-        email: email,
+        timeslot_id: selectedTimeSlot.id,
       };
 
       const response = await fetch('/api/bookings', {
@@ -84,12 +84,13 @@ export default function BookingPage({}: BookingPageProps) {
       }
 
       const bookingData = await response.json();
-      setSuccess('Booking created successfully!');
-
-      // Redirect to confirmation page after a short delay
-      setTimeout(() => {
-        window.location.href = `/book/confirmation?bookingId=${bookingData.id}`;
-      }, 2000);
+      
+      // Redirect to Stripe Checkout
+      if (bookingData.url) {
+        window.location.href = bookingData.url;
+      } else {
+        throw new Error('No checkout URL received');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -111,13 +112,13 @@ export default function BookingPage({}: BookingPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#f1d4af] py-8">
+      <div className="max-w-6xl mx-auto w-[90%]">
         <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-          <div className="px-6 py-4 bg-blue-600 text-white">
+          <div className="px-6 py-4 bg-[#D8794F] text-white">
             <h1 className="text-2xl font-bold">Book a Massage Chair Session</h1>
-            <p className="text-blue-100 mt-1">
-              Select an available time slot and enter your details
+            <p className="text-orange-100 mt-1">
+              Select a date and available time slot for your relaxation session
             </p>
           </div>
 
@@ -174,23 +175,47 @@ export default function BookingPage({}: BookingPageProps) {
 
             {isLoading ? (
               <div className="text-center py-8">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <p className="mt-2 text-gray-600">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#D8794F]"></div>
+                <p className="mt-2 text-[#687258]">
                   Loading available time slots...
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Date Selection */}
+                <div>
+                  <h2 className="text-lg font-semibold text-[#737D6F] mb-4">
+                    Select a Date
+                  </h2>
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    disabled={(date) => date < new Date()}
+                    className="rounded-md border border-[#ececec]"
+                  />
+                </div>
+
                 {/* Time Slots Selection */}
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  <h2 className="text-lg font-semibold text-[#737D6F] mb-4">
                     Available Time Slots
+                    {selectedDate && (
+                      <span className="text-sm font-normal text-[#687258] block">
+                        {selectedDate.toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </span>
+                    )}
                   </h2>
 
                   {timeSlots.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      <p>No available time slots at the moment.</p>
-                      <p className="text-sm mt-1">Please check back later.</p>
+                    <div className="text-center py-8 text-[#687258]">
+                      <p>No available time slots for this date.</p>
+                      <p className="text-sm mt-1">Please select another date.</p>
                     </div>
                   ) : (
                     <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -200,14 +225,20 @@ export default function BookingPage({}: BookingPageProps) {
                           onClick={() => handleTimeSlotSelect(timeSlot)}
                           className={`w-full p-4 text-left border rounded-lg transition-colors ${
                             selectedTimeSlot?.id === timeSlot.id
-                              ? 'border-blue-500 bg-blue-50 text-blue-900'
-                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                              ? 'border-[#D8794F] bg-orange-50 text-[#D8794F]'
+                              : 'border-[#ececec] hover:border-[#D8794F] hover:bg-orange-50'
                           }`}
                         >
                           <div className="font-medium">
-                            {formatTime(timeSlot.start_time)}
+                            {new Date(timeSlot.start_time).toLocaleTimeString('en-US', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })} - {new Date(timeSlot.end_time).toLocaleTimeString('en-US', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
                           </div>
-                          <div className="text-sm text-gray-600">
+                          <div className="text-sm text-[#687258]">
                             Duration: 30 minutes
                           </div>
                         </button>
@@ -218,50 +249,40 @@ export default function BookingPage({}: BookingPageProps) {
 
                 {/* Booking Form */}
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  <h2 className="text-lg font-semibold text-[#737D6F] mb-4">
                     Booking Details
                   </h2>
 
                   <form onSubmit={handleBookingSubmit} className="space-y-6">
-                    <div>
-                      <label
-                        htmlFor="email"
-                        className="block text-sm font-medium text-gray-700 mb-2"
-                      >
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        id="email"
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="your@email.com"
-                        required
-                      />
-                    </div>
-
                     {selectedTimeSlot && (
-                      <div className="p-4 bg-gray-50 rounded-lg">
-                        <h3 className="font-medium text-gray-900 mb-2">
+                      <div className="p-4 bg-[#f1d4af]/30 rounded-lg border border-[#ececec]">
+                        <h3 className="font-medium text-[#737D6F] mb-2">
                           Selected Time Slot
                         </h3>
-                        <p className="text-gray-700">
-                          {formatTime(selectedTimeSlot.start_time)}
+                        <p className="text-[#333333]">
+                          {selectedDate?.toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })} at {new Date(selectedTimeSlot.start_time).toLocaleTimeString('en-US', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
                         </p>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Duration: 30 minutes
+                        <p className="text-sm text-[#687258] mt-1">
+                          Duration: 30 minutes • Price: 150 SEK
                         </p>
                       </div>
                     )}
 
-                    <button
+                    <Button
                       type="submit"
-                      disabled={!selectedTimeSlot || !email || isBooking}
-                      className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={!selectedTimeSlot || isBooking}
+                      className="w-full bg-[#D8794F] text-white hover:bg-[#c76b40] disabled:opacity-50"
                     >
-                      {isBooking ? 'Creating Booking...' : 'Book Now'}
-                    </button>
+                      {isBooking ? 'Creating Booking...' : 'Book Now & Pay with Stripe'}
+                    </Button>
                   </form>
                 </div>
               </div>

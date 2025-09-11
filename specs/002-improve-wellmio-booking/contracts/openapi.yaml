@@ -1,0 +1,160 @@
+openapi: 3.0.0
+info:
+  title: Wellmio Booking API
+  version: 1.0.0
+paths:
+  /api/timeslots:
+    get:
+      summary: Get available timeslots for a given date
+      parameters:
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: A list of available timeslots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimeSlot'
+  /api/bookings:
+    post:
+      summary: Create a new booking and a Stripe checkout session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                timeslot_id:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: The Stripe checkout session URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    format: url
+  /api/admin/bookings:
+    get:
+      summary: Get all bookings (for admins)
+      responses:
+        '200':
+          description: A list of all bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+  /api/admin/timeslots:
+    post:
+      summary: Create a new timeslot (for admins)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeSlot'
+      responses:
+        '201':
+          description: The created timeslot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeSlot'
+  /api/admin/timeslots/{id}:
+    put:
+      summary: Update a timeslot (for admins)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeSlot'
+      responses:
+        '200':
+          description: The updated timeslot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeSlot'
+    delete:
+      summary: Delete a timeslot (for admins)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: No content
+  /api/stripe/webhook:
+    post:
+      summary: Handle Stripe webhook events
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: OK
+
+components:
+  schemas:
+    TimeSlot:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        is_booked:
+          type: boolean
+    Booking:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        user_id:
+          type: string
+          format: uuid
+        timeslot_id:
+          type: string
+          format: uuid
+        payment_status:
+          type: string
+          enum: [pending, paid, failed]
+        stripe_session_id:
+          type: string

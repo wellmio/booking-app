@@ -2,13 +2,12 @@
  * Database Schema Types
  *
  * TypeScript types for the Wellmio booking system database.
- * Based on the data model defined in specs/001-build-a-web/data-model.md
- * and the Supabase migration in supabase/migrations/0001_initial_schema.sql
+ * Based on the data model defined in specs/002-improve-wellmio-booking/data-model.md
+ * and the Supabase migration in supabase/migrations/0002_add_booking_schema.sql
  */
 
 // Enums matching the database custom types
-export type PaymentStatus = 'pending' | 'succeeded' | 'failed';
-export type SlotStatus = 'available' | 'booked';
+export type PaymentStatus = 'pending' | 'paid' | 'failed';
 
 // Database table types
 export interface User {
@@ -21,16 +20,15 @@ export interface TimeSlot {
   id: string; // UUID
   start_time: string; // ISO timestamp
   end_time: string; // ISO timestamp
-  status: SlotStatus;
-  created_at: string; // ISO timestamp
+  is_booked: boolean;
 }
 
-export interface Appointment {
+export interface Booking {
   id: string; // UUID
   user_id: string; // UUID (Foreign Key to User)
-  time_slot_id: string; // UUID (Foreign Key to TimeSlot)
+  timeslot_id: string; // UUID (Foreign Key to TimeSlot)
   payment_status: PaymentStatus;
-  stripe_payment_intent_id: string | null;
+  stripe_session_id: string | null;
   created_at: string; // ISO timestamp
 }
 
@@ -49,14 +47,14 @@ export interface BookingOption {
 
 // API Request/Response types
 export interface BookingRequest {
-  time_slot_id: string;
-  email: string;
+  timeslot_id: string;
 }
 
 export interface BookingResponse {
   id: string;
   time_slot: TimeSlot;
   payment_status: PaymentStatus;
+  url: string;
 }
 
 export interface BookingOptionRequest {
@@ -72,18 +70,16 @@ export interface UserInsert {
 }
 
 export interface TimeSlotInsert {
-  id: string;
   start_time: string;
   end_time: string;
-  status?: SlotStatus;
+  is_booked?: boolean;
 }
 
-export interface AppointmentInsert {
-  id: string;
+export interface BookingInsert {
   user_id: string;
-  time_slot_id: string;
+  timeslot_id: string;
   payment_status?: PaymentStatus;
-  stripe_payment_intent_id?: string | null;
+  stripe_session_id?: string | null;
 }
 
 export interface AdminInsert {
@@ -105,12 +101,12 @@ export interface UserUpdate {
 export interface TimeSlotUpdate {
   start_time?: string;
   end_time?: string;
-  status?: SlotStatus;
+  is_booked?: boolean;
 }
 
-export interface AppointmentUpdate {
+export interface BookingUpdate {
   payment_status?: PaymentStatus;
-  stripe_payment_intent_id?: string | null;
+  stripe_session_id?: string | null;
 }
 
 export interface BookingOptionUpdate {
@@ -132,8 +128,8 @@ export interface DatabaseListResult<T> {
 // Table names for database queries
 export const TABLES = {
   USERS: 'users',
-  TIME_SLOTS: 'time_slots',
-  APPOINTMENTS: 'appointments',
+  TIME_SLOTS: 'timeslots',
+  BOOKINGS: 'bookings',
   ADMINS: 'admins',
   BOOKING_OPTIONS: 'booking_options',
 } as const;

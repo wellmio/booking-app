@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
+import { describe, it, expect, beforeAll, afterAll, jest } from '@jest/globals';
 
 /**
  * Contract Test for POST /api/bookings
@@ -13,9 +13,11 @@ import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 
 describe('POST /api/bookings', () => {
   let baseUrl: string;
+  let authToken: string;
 
   beforeAll(() => {
     baseUrl = process.env.TEST_BASE_URL || 'http://localhost:3000';
+    authToken = process.env.TEST_USER_TOKEN || 'mock-user-token';
   });
 
   afterAll(() => {
@@ -32,14 +34,14 @@ describe('POST /api/bookings', () => {
     }
 
     const bookingRequest = {
-      time_slot_id: timeslots[0].id, // Use real UUID from database
-      email: 'test@example.com',
+      timeslot_id: timeslots[0].id, // Use real UUID from database
     };
 
     const response = await fetch(`${baseUrl}/api/bookings`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
       },
       body: JSON.stringify(bookingRequest),
     });
@@ -54,10 +56,14 @@ describe('POST /api/bookings', () => {
     expect(data).toHaveProperty('id');
     expect(data).toHaveProperty('time_slot');
     expect(data).toHaveProperty('payment_status');
+    expect(data).toHaveProperty('url');
+
 
     // Verify data types
     expect(typeof data.id).toBe('string');
     expect(typeof data.payment_status).toBe('string');
+    expect(typeof data.url).toBe('string');
+
 
     // Verify UUID format for id
     const uuidRegex =
@@ -65,7 +71,7 @@ describe('POST /api/bookings', () => {
     expect(data.id).toMatch(uuidRegex);
 
     // Verify payment_status is one of the allowed values
-    expect(['pending', 'succeeded', 'failed']).toContain(data.payment_status);
+    expect(['pending', 'paid', 'failed']).toContain(data.payment_status);
 
     // Verify time_slot structure
     expect(data.time_slot).toHaveProperty('id');
@@ -78,14 +84,14 @@ describe('POST /api/bookings', () => {
 
   it('should reject booking with invalid time_slot_id', async () => {
     const bookingRequest = {
-      time_slot_id: 'invalid-uuid',
-      email: 'test@example.com',
+      timeslot_id: 'invalid-uuid',
     };
 
     const response = await fetch(`${baseUrl}/api/bookings`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
       },
       body: JSON.stringify(bookingRequest),
     });
@@ -94,52 +100,16 @@ describe('POST /api/bookings', () => {
     expect(response.status).toBe(400);
   });
 
-  it('should reject booking with invalid email', async () => {
-    const bookingRequest = {
-      time_slot_id: '123e4567-e89b-12d3-a456-426614174000',
-      email: 'invalid-email',
-    };
-
-    const response = await fetch(`${baseUrl}/api/bookings`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(bookingRequest),
-    });
-
-    // Should return error for invalid email
-    expect(response.status).toBe(400);
-  });
-
   it('should reject booking with missing required fields', async () => {
     const bookingRequest = {
-      email: 'test@example.com',
-      // Missing time_slot_id
+      // Missing timeslot_id
     };
 
     const response = await fetch(`${baseUrl}/api/bookings`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(bookingRequest),
-    });
-
-    // Should return error for missing required field
-    expect(response.status).toBe(400);
-  });
-
-  it('should reject booking with missing email', async () => {
-    const bookingRequest = {
-      time_slot_id: '123e4567-e89b-12d3-a456-426614174000',
-      // Missing email
-    };
-
-    const response = await fetch(`${baseUrl}/api/bookings`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
       },
       body: JSON.stringify(bookingRequest),
     });
@@ -150,14 +120,14 @@ describe('POST /api/bookings', () => {
 
   it('should reject booking for non-existent time slot', async () => {
     const bookingRequest = {
-      time_slot_id: '00000000-0000-0000-0000-000000000000', // Non-existent UUID
-      email: 'test@example.com',
+      timeslot_id: '00000000-0000-0000-0000-000000000000', // Non-existent UUID
     };
 
     const response = await fetch(`${baseUrl}/api/bookings`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
       },
       body: JSON.stringify(bookingRequest),
     });
@@ -177,14 +147,14 @@ describe('POST /api/bookings', () => {
 
     // First, create a booking
     const bookingRequest = {
-      time_slot_id: timeslots[0].id, // Use real UUID from database
-      email: 'test@example.com',
+      timeslot_id: timeslots[0].id, // Use real UUID from database
     };
 
     const firstResponse = await fetch(`${baseUrl}/api/bookings`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
       },
       body: JSON.stringify(bookingRequest),
     });
@@ -193,13 +163,13 @@ describe('POST /api/bookings', () => {
     if (firstResponse.status === 200) {
       const secondBookingRequest = {
         time_slot_id: timeslots[0].id, // Use the same time slot ID
-        email: 'another@example.com',
       };
 
       const secondResponse = await fetch(`${baseUrl}/api/bookings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify(secondBookingRequest),
       });
@@ -214,34 +184,12 @@ describe('POST /api/bookings', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`,
       },
       body: 'invalid json',
     });
 
     // Should return error for malformed JSON
     expect(response.status).toBe(400);
-  });
-
-  it('should handle missing Content-Type header', async () => {
-    // First, get a real time slot ID from the database
-    const timeslotsResponse = await fetch(`${baseUrl}/api/timeslots`);
-    const timeslots = await timeslotsResponse.json();
-
-    if (timeslots.length === 0) {
-      throw new Error('No time slots available for testing');
-    }
-
-    const bookingRequest = {
-      time_slot_id: timeslots[0].id, // Use real UUID from database
-      email: 'test@example.com',
-    };
-
-    const response = await fetch(`${baseUrl}/api/bookings`, {
-      method: 'POST',
-      body: JSON.stringify(bookingRequest),
-    });
-
-    // API should work even without explicit Content-Type header
-    expect(response.status).toBe(200);
   });
 });

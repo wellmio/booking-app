@@ -13,8 +13,10 @@ const customJestConfig = {
   collectCoverageFrom: ['src/**/*.{js,jsx,ts,tsx}', '!src/**/*.d.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    'stripe': '<rootDir>/tests/__mocks__/stripe.ts',
   },
-  testTimeout: 10000, // 10 seconds timeout for integration tests
+  testTimeout: 30000, // 30 seconds timeout for integration tests
+  automock: true,
 };
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

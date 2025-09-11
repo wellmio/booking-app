@@ -13,10 +13,14 @@ const supabase = createClient(
  * GET /api/timeslots
  *
  * Returns available time slots for booking.
+ * Can be filtered by date.
  * Based on OpenAPI spec and contract tests.
  */
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const date = searchParams.get('date');
+
     const cacheEnabled =
       process.env.NODE_ENV === 'production' &&
       !!process.env.UPSTASH_REDIS_REST_URL &&
@@ -25,7 +29,7 @@ export async function GET() {
       process.env.NODE_ENV === 'test' ||
       process.env.JEST_WORKER_ID !== undefined ||
       process.env.TEST_BASE_URL !== undefined;
-    const cacheKey = 'timeslots:available:v1';
+    const cacheKey = `timeslots:available:v1:${date || 'all'}`;
     type ApiTimeSlot = Pick<TimeSlot, 'id' | 'start_time' | 'end_time'>;
     let cached: ApiTimeSlot[] | null = null;
     let redis: Redis | null = null;
@@ -47,84 +51,61 @@ export async function GET() {
         console.log('Redis unavailable, proceeding without cache');
       }
     }
-    // Try to query from database first, fallback to mock data if it fails
-    interface DbTimeSlotRow {
-      id: string;
-      start_time: string;
-      end_time: string;
-      status?: string;
-      created_at?: string;
+    
+    let query = supabase
+      .from('timeslots')
+      .select('*')
+      .eq('is_booked', false)
+      .gte('start_time', new Date().toISOString()) // Only future time slots
+      .order('start_time', { ascending: true });
+
+    if (date) {
+        const startDate = new Date(date);
+        const endDate = new Date(date);
+        endDate.setDate(startDate.getDate() + 1);
+        query = query.gte('start_time', startDate.toISOString()).lt('start_time', endDate.toISOString());
     }
-    let timeSlots: DbTimeSlotRow[] = [];
-    let useMockData = false;
 
-    try {
-      const { data, error } = await supabase
-        .from('time_slots')
-        .select('*')
-        .eq('status', 'available')
-        .gte('start_time', new Date().toISOString()) // Only future time slots
-        .order('start_time', { ascending: true });
+    const { data, error } = await query;
 
-      if (error) {
+    if (error) {
         console.log('Database error, using mock data:', error.message);
-        useMockData = true;
-      } else {
-        timeSlots = data || [];
-      }
-    } catch (dbError) {
-      console.log('Database connection failed, using mock data:', dbError);
-      useMockData = true;
+        // Return mock data for testing
+        const mockTimeSlots: TimeSlot[] = [
+            {
+              id: '123e4567-e89b-12d3-a456-426614174000',
+              start_time: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
+              end_time: new Date(
+                Date.now() + 24 * 60 * 60 * 1000 + 30 * 60 * 1000
+              ).toISOString(), // Tomorrow + 30 min
+              is_booked: false,
+            },
+            {
+              id: '123e4567-e89b-12d3-a456-426614174001',
+              start_time: new Date(
+                Date.now() + 2 * 24 * 60 * 60 * 1000
+              ).toISOString(), // Day after tomorrow
+              end_time: new Date(
+                Date.now() + 2 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000
+              ).toISOString(), // Day after tomorrow + 30 min
+              is_booked: false,
+            },
+        ];
+        const response: ApiTimeSlot[] = mockTimeSlots.map(slot => ({
+            id: slot.id,
+            start_time: slot.start_time,
+            end_time: slot.end_time,
+        }));
+        return NextResponse.json(response, {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+        });
     }
 
-    if (useMockData) {
-      // Return mock data for testing
-      const mockTimeSlots: TimeSlot[] = [
-        {
-          id: '123e4567-e89b-12d3-a456-426614174000',
-          start_time: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
-          end_time: new Date(
-            Date.now() + 24 * 60 * 60 * 1000 + 30 * 60 * 1000
-          ).toISOString(), // Tomorrow + 30 min
-          status: 'available',
-          created_at: new Date().toISOString(),
-        },
-        {
-          id: '123e4567-e89b-12d3-a456-426614174001',
-          start_time: new Date(
-            Date.now() + 2 * 24 * 60 * 60 * 1000
-          ).toISOString(), // Day after tomorrow
-          end_time: new Date(
-            Date.now() + 2 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000
-          ).toISOString(), // Day after tomorrow + 30 min
-          status: 'available',
-          created_at: new Date().toISOString(),
-        },
-      ];
-
-      const response: ApiTimeSlot[] = mockTimeSlots.map(slot => ({
-        id: slot.id,
-        start_time: slot.start_time,
-        end_time: slot.end_time,
-      }));
-
-      if (redis) {
-        try {
-          await redis.set(cacheKey, response, { ex: 30 });
-        } catch {}
-      }
-
-      return NextResponse.json(response, {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-    }
-
-    // Transform the data to match the API contract
     const response: ApiTimeSlot[] =
-      timeSlots?.map(slot => ({
+      data?.map(slot => ({
         id: slot.id,
         start_time: slot.start_time,
         end_time: slot.end_time,
