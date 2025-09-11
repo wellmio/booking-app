@@ -35,7 +35,9 @@ describe('Admin API Endpoints', () => {
       });
 
       expect(response.status).toBe(200);
-      expect(response.headers.get('content-type')).toContain('application/json');
+      expect(response.headers.get('content-type')).toContain(
+        'application/json'
+      );
 
       const data = await response.json();
       expect(Array.isArray(data)).toBe(true);
@@ -80,18 +82,18 @@ describe('Admin API Endpoints', () => {
     });
 
     it('should reject request without authentication', async () => {
-        const newTimeSlot = {
-            start_time: new Date().toISOString(),
-            end_time: new Date(new Date().getTime() + 60 * 60 * 1000).toISOString(),
-        };
-        const response = await fetch(`${baseUrl}/api/admin/timeslots`, {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(newTimeSlot),
-        });
-        expect(response.status).toBe(401);
+      const newTimeSlot = {
+        start_time: new Date().toISOString(),
+        end_time: new Date(new Date().getTime() + 60 * 60 * 1000).toISOString(),
+      };
+      const response = await fetch(`${baseUrl}/api/admin/timeslots`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newTimeSlot),
+      });
+      expect(response.status).toBe(401);
     });
   });
 
@@ -101,17 +103,22 @@ describe('Admin API Endpoints', () => {
       const timeslotId = '00000000-0000-0000-0000-000000000000'; // A valid timeslot ID from the test database
       const updatedTimeSlot = {
         start_time: new Date().toISOString(),
-        end_time: new Date(new Date().getTime() + 2 * 60 * 60 * 1000).toISOString(),
+        end_time: new Date(
+          new Date().getTime() + 2 * 60 * 60 * 1000
+        ).toISOString(),
       };
 
-      const response = await fetch(`${baseUrl}/api/admin/timeslots/${timeslotId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${adminAuthToken}`,
-        },
-        body: JSON.stringify(updatedTimeSlot),
-      });
+      const response = await fetch(
+        `${baseUrl}/api/admin/timeslots/${timeslotId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${adminAuthToken}`,
+          },
+          body: JSON.stringify(updatedTimeSlot),
+        }
+      );
 
       expect(response.status).toBe(200);
       const data = await response.json();
@@ -125,12 +132,15 @@ describe('Admin API Endpoints', () => {
       // Note: This test will require a timeslot to exist in the database
       const timeslotId = '00000000-0000-0000-0000-000000000000'; // A valid timeslot ID from the test database
 
-      const response = await fetch(`${baseUrl}/api/admin/timeslots/${timeslotId}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${adminAuthToken}`,
-        },
-      });
+      const response = await fetch(
+        `${baseUrl}/api/admin/timeslots/${timeslotId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${adminAuthToken}`,
+          },
+        }
+      );
 
       expect(response.status).toBe(204);
     });

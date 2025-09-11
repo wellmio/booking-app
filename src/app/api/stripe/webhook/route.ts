@@ -30,20 +30,26 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if we're in test mode - detect by signature pattern, environment, or webhook secret
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || 'mock-webhook-secret';
-    const isTestMode = 
+    const webhookSecret =
+      process.env.STRIPE_WEBHOOK_SECRET || 'mock-webhook-secret';
+    const isTestMode =
       process.env.NODE_ENV === 'test' ||
       process.env.JEST_WORKER_ID !== undefined ||
       process.env.TEST_BASE_URL !== undefined ||
       webhookSecret === 'mock-webhook-secret' ||
-      signature.startsWith('t=') && (signature.includes('v1=test') || signature.includes('v1=invalid'));
+      (signature.startsWith('t=') &&
+        (signature.includes('v1=test') || signature.includes('v1=invalid')));
 
     // Additional test mode detection: try to verify with mock-webhook-secret
     let isTestSignature = false;
     if (!isTestMode && signature.startsWith('t=')) {
       try {
         const testStripe = new Stripe('sk_test_mock');
-        testStripe.webhooks.constructEvent(body, signature, 'mock-webhook-secret');
+        testStripe.webhooks.constructEvent(
+          body,
+          signature,
+          'mock-webhook-secret'
+        );
         isTestSignature = true;
       } catch (err) {
         // Not a test signature, continue with normal flow
@@ -60,7 +66,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-      
+
       // Mock the event construction for valid test signatures
       try {
         const parsedBody = JSON.parse(body);
@@ -76,8 +82,8 @@ export async function POST(request: NextRequest) {
               },
             },
           },
-        } as Stripe.Event;
-      } catch (parseError) {
+        } as unknown as Stripe.Event;
+      } catch {
         return NextResponse.json(
           { error: 'Invalid JSON in request body' },
           { status: 400 }
@@ -104,13 +110,13 @@ export async function POST(request: NextRequest) {
     switch (event.type) {
       case 'checkout.session.completed':
         const session = event.data.object as Stripe.Checkout.Session;
-        
+
         if (isTestMode || isTestSignature) {
           // In test mode, just return success without database operations
           console.log('Test webhook processed successfully');
           break;
         }
-        
+
         if (session.metadata?.booking_id) {
           // Update booking status to paid
           const { error } = await supabase
@@ -148,7 +154,7 @@ export async function POST(request: NextRequest) {
       case 'checkout.session.expired':
       case 'payment_intent.payment_failed':
         const failedSession = event.data.object as Stripe.Checkout.Session;
-        
+
         if (failedSession.metadata?.booking_id) {
           // Update booking status to failed
           await supabase

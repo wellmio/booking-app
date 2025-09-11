@@ -3,13 +3,17 @@ const mockTimeslots = [
   {
     id: '123e4567-e89b-12d3-a456-426614174000',
     start_time: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    end_time: new Date(Date.now() + 24 * 60 * 60 * 1000 + 30 * 60 * 1000).toISOString(),
+    end_time: new Date(
+      Date.now() + 24 * 60 * 60 * 1000 + 30 * 60 * 1000
+    ).toISOString(),
     is_booked: false,
   },
   {
     id: '123e4567-e89b-12d3-a456-426614174001',
     start_time: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-    end_time: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000).toISOString(),
+    end_time: new Date(
+      Date.now() + 2 * 24 * 60 * 60 * 1000 + 30 * 60 * 1000
+    ).toISOString(),
     is_booked: false,
   },
 ];
@@ -32,15 +36,15 @@ const createMockQueryBuilder = (table: string) => {
 
   // Configure different behaviors based on table
   if (table === 'timeslots') {
-    queryBuilder.single.mockResolvedValue({ 
-      data: mockTimeslots[0], 
-      error: null 
+    queryBuilder.single.mockResolvedValue({
+      data: mockTimeslots[0],
+      error: null,
     });
-    queryBuilder.maybeSingle.mockResolvedValue({ 
-      data: mockTimeslots[0], 
-      error: null 
+    queryBuilder.maybeSingle.mockResolvedValue({
+      data: mockTimeslots[0],
+      error: null,
     });
-    
+
     // Mock insert for timeslots
     queryBuilder.insert.mockImplementation(() => ({
       ...queryBuilder,
@@ -79,9 +83,8 @@ const createMockQueryBuilder = (table: string) => {
     queryBuilder.delete.mockImplementation(() => ({
       eq: jest.fn().mockResolvedValue({ error: null }),
     }));
-
   } else if (table === 'bookings') {
-    queryBuilder.single.mockResolvedValue({ 
+    queryBuilder.single.mockResolvedValue({
       data: {
         id: 'booking-123',
         user_id: 'test-user-id',
@@ -89,8 +92,8 @@ const createMockQueryBuilder = (table: string) => {
         payment_status: 'pending',
         stripe_session_id: null,
         created_at: new Date().toISOString(),
-      }, 
-      error: null 
+      },
+      error: null,
     });
 
     // Mock insert for bookings
@@ -119,9 +122,9 @@ const createMockQueryBuilder = (table: string) => {
     // Mock select for bookings (admin endpoint)
     queryBuilder.select.mockImplementation(() => ({
       ...queryBuilder,
-      order: jest.fn().mockResolvedValue({ 
-        data: mockBookings, 
-        error: null 
+      order: jest.fn().mockResolvedValue({
+        data: mockBookings,
+        error: null,
       }),
     }));
   }
@@ -130,7 +133,7 @@ const createMockQueryBuilder = (table: string) => {
   if (!queryBuilder.single.mock.calls.length) {
     queryBuilder.single.mockResolvedValue({ data: null, error: null });
   }
-  
+
   return queryBuilder;
 };
 

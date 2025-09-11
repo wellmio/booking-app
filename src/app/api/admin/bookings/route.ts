@@ -78,8 +78,8 @@ export async function GET(request: NextRequest) {
     const incomingToken = authHeader.startsWith('Bearer ')
       ? authHeader.substring(7)
       : '';
-    
-    const isTestMode = 
+
+    const isTestMode =
       process.env.NODE_ENV === 'test' ||
       process.env.JEST_WORKER_ID !== undefined ||
       process.env.TEST_BASE_URL !== undefined ||

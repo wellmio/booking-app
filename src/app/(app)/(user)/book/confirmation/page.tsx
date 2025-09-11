@@ -33,10 +33,10 @@ function BookingConfirmationInner() {
             end_time: new Date(
               Date.now() + 24 * 60 * 60 * 1000 + 30 * 60 * 1000
             ).toISOString(), // Tomorrow + 30 min
-            status: 'booked',
-            created_at: new Date().toISOString(),
+            is_booked: true,
           },
-          payment_status: 'succeeded',
+          payment_status: 'paid',
+          url: '', // URL not needed for confirmation page
         });
         setIsLoading(false);
       }, 1000);
@@ -181,7 +181,7 @@ function BookingConfirmationInner() {
                   <span className="text-gray-600">Status:</span>
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      booking.payment_status === 'succeeded'
+                      booking.payment_status === 'paid'
                         ? 'bg-green-100 text-green-800'
                         : booking.payment_status === 'pending'
                           ? 'bg-yellow-100 text-yellow-800'

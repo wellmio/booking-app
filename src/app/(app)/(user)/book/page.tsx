@@ -12,21 +12,22 @@ export default function BookingPage({}: BookingPageProps) {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<TimeSlot | null>(
     null
   );
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date()
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isBooking, setIsBooking] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   // Fetch available time slots for selected date
   useEffect(() => {
     const fetchTimeSlots = async () => {
       if (!selectedDate) return;
-      
+
       try {
         setIsLoading(true);
         setSelectedTimeSlot(null); // Clear selection when date changes
-        
+
         // Format date for API query
         const dateString = selectedDate.toISOString().split('T')[0];
         const response = await fetch(`/api/timeslots?date=${dateString}`);
@@ -84,7 +85,7 @@ export default function BookingPage({}: BookingPageProps) {
       }
 
       const bookingData = await response.json();
-      
+
       // Redirect to Stripe Checkout
       if (bookingData.url) {
         window.location.href = bookingData.url;
@@ -96,19 +97,6 @@ export default function BookingPage({}: BookingPageProps) {
     } finally {
       setIsBooking(false);
     }
-  };
-
-  // Format time for display
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
   };
 
   return (
@@ -147,32 +135,6 @@ export default function BookingPage({}: BookingPageProps) {
               </div>
             )}
 
-            {success && (
-              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg
-                      className="h-5 w-5 text-green-400"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-green-800">
-                      Success
-                    </h3>
-                    <div className="mt-2 text-sm text-green-700">{success}</div>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {isLoading ? (
               <div className="text-center py-8">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#D8794F]"></div>
@@ -191,7 +153,7 @@ export default function BookingPage({}: BookingPageProps) {
                     mode="single"
                     selected={selectedDate}
                     onSelect={setSelectedDate}
-                    disabled={(date) => date < new Date()}
+                    disabled={date => date < new Date()}
                     className="rounded-md border border-[#ececec]"
                   />
                 </div>
@@ -215,7 +177,9 @@ export default function BookingPage({}: BookingPageProps) {
                   {timeSlots.length === 0 ? (
                     <div className="text-center py-8 text-[#687258]">
                       <p>No available time slots for this date.</p>
-                      <p className="text-sm mt-1">Please select another date.</p>
+                      <p className="text-sm mt-1">
+                        Please select another date.
+                      </p>
                     </div>
                   ) : (
                     <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -230,13 +194,21 @@ export default function BookingPage({}: BookingPageProps) {
                           }`}
                         >
                           <div className="font-medium">
-                            {new Date(timeSlot.start_time).toLocaleTimeString('en-US', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })} - {new Date(timeSlot.end_time).toLocaleTimeString('en-US', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
+                            {new Date(timeSlot.start_time).toLocaleTimeString(
+                              'en-US',
+                              {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              }
+                            )}{' '}
+                            -{' '}
+                            {new Date(timeSlot.end_time).toLocaleTimeString(
+                              'en-US',
+                              {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              }
+                            )}
                           </div>
                           <div className="text-sm text-[#687258]">
                             Duration: 30 minutes
@@ -265,7 +237,11 @@ export default function BookingPage({}: BookingPageProps) {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric',
-                          })} at {new Date(selectedTimeSlot.start_time).toLocaleTimeString('en-US', {
+                          })}{' '}
+                          at{' '}
+                          {new Date(
+                            selectedTimeSlot.start_time
+                          ).toLocaleTimeString('en-US', {
                             hour: '2-digit',
                             minute: '2-digit',
                           })}
@@ -281,7 +257,9 @@ export default function BookingPage({}: BookingPageProps) {
                       disabled={!selectedTimeSlot || isBooking}
                       className="w-full bg-[#D8794F] text-white hover:bg-[#c76b40] disabled:opacity-50"
                     >
-                      {isBooking ? 'Creating Booking...' : 'Book Now & Pay with Stripe'}
+                      {isBooking
+                        ? 'Creating Booking...'
+                        : 'Book Now & Pay with Stripe'}
                     </Button>
                   </form>
                 </div>

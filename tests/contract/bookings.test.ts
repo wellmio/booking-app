@@ -58,12 +58,10 @@ describe('POST /api/bookings', () => {
     expect(data).toHaveProperty('payment_status');
     expect(data).toHaveProperty('url');
 
-
     // Verify data types
     expect(typeof data.id).toBe('string');
     expect(typeof data.payment_status).toBe('string');
     expect(typeof data.url).toBe('string');
-
 
     // Verify UUID format for id
     const uuidRegex =

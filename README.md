@@ -15,7 +15,7 @@ A Next.js application for booking massage chair sessions at Wellmio wellness stu
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm, yarn, pnpm, or bun
 - Supabase account (for production)
 - Upstash Redis account (optional, for caching)
@@ -23,12 +23,14 @@ A Next.js application for booking massage chair sessions at Wellmio wellness stu
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/wellmio/booking-app.git
 cd booking-app
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 # or
@@ -40,11 +42,13 @@ bun install
 ```
 
 3. Set up environment variables:
+
 ```bash
 cp env.template .env.local
 ```
 
 Edit `.env.local` with your configuration:
+
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
@@ -54,6 +58,7 @@ UPSTASH_REDIS_REST_TOKEN=your_redis_token (optional)
 ```
 
 4. Run the development server:
+
 ```bash
 npm run dev
 # or
@@ -69,22 +74,26 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ## Supported Routes
 
 ### Public Pages
+
 - **`/`** - Home page with company information and booking CTA
 - **`/book`** - User booking page to select time slots and create bookings
 - **`/book/confirmation`** - Booking confirmation page with details
 
 ### Admin Pages
+
 - **`/login`** - Admin login page
 - **`/options`** - Admin options management page
 
 ### API Routes
 
 #### Public APIs
+
 - **`GET /api/timeslots`** - Get available time slots for booking
 - **`POST /api/bookings`** - Create a new booking
 - **`GET /api/test-supabase`** - Test Supabase connection
 
 #### Admin APIs (Requires Authentication)
+
 - **`GET /api/admin/booking-options`** - Get all booking configuration options
 - **`PUT /api/admin/booking-options`** - Update booking configuration options
 

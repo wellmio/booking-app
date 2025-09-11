@@ -53,29 +53,38 @@ describe('Admin Timeslot Management Flow Integration', () => {
 
     // 6. Update the newly created time slot
     const updatedTimeSlotData = {
-      start_time: new Date(new Date().getTime() + 2 * 60 * 60 * 1000).toISOString(),
-      end_time: new Date(new Date().getTime() + 3 * 60 * 60 * 1000).toISOString(),
+      start_time: new Date(
+        new Date().getTime() + 2 * 60 * 60 * 1000
+      ).toISOString(),
+      end_time: new Date(
+        new Date().getTime() + 3 * 60 * 60 * 1000
+      ).toISOString(),
     };
-    const updateResponse = await fetch(`${baseUrl}/api/admin/timeslots/${createdTimeSlot.id}`, {
+    const updateResponse = await fetch(
+      `${baseUrl}/api/admin/timeslots/${createdTimeSlot.id}`,
+      {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${adminAuthToken}`,
         },
         body: JSON.stringify(updatedTimeSlotData),
-    });
+      }
+    );
     expect(updateResponse.status).toBe(200);
     const updatedTimeSlot = await updateResponse.json();
     expect(updatedTimeSlot.start_time).toBe(updatedTimeSlotData.start_time);
 
-
     // 7. Delete the newly created time slot
-    const deleteResponse = await fetch(`${baseUrl}/api/admin/timeslots/${createdTimeSlot.id}`, {
+    const deleteResponse = await fetch(
+      `${baseUrl}/api/admin/timeslots/${createdTimeSlot.id}`,
+      {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${adminAuthToken}`,
         },
-    });
+      }
+    );
     expect(deleteResponse.status).toBe(204);
   });
 });

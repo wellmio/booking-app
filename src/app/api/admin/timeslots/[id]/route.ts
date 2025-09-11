@@ -123,8 +123,8 @@ export async function PUT(
     const incomingToken = authHeader.startsWith('Bearer ')
       ? authHeader.substring(7)
       : '';
-    
-    const isTestMode = 
+
+    const isTestMode =
       process.env.NODE_ENV === 'test' ||
       process.env.JEST_WORKER_ID !== undefined ||
       process.env.TEST_BASE_URL !== undefined ||
@@ -220,7 +220,7 @@ export async function DELETE(
     const resolvedParams = await Promise.resolve(params);
     console.log('DELETE: resolvedParams:', resolvedParams);
     const { id } = resolvedParams;
-    
+
     // Debug log
     console.log('DELETE timeslot ID:', id);
 
@@ -240,22 +240,24 @@ export async function DELETE(
     const incomingToken = authHeader.startsWith('Bearer ')
       ? authHeader.substring(7)
       : '';
-    
-    const isTestMode = 
+
+    const isTestMode =
       process.env.NODE_ENV === 'test' ||
       process.env.JEST_WORKER_ID !== undefined ||
       process.env.TEST_BASE_URL !== undefined ||
       incomingToken === (process.env.TEST_ADMIN_TOKEN || 'mock-admin-token');
 
     console.log('DELETE: Test mode check, isTestMode:', isTestMode);
-    
+
     if (isTestMode) {
       // Return success for tests
       console.log('DELETE: Returning test success');
       return new NextResponse(null, { status: 204 });
     }
 
-    console.log('DELETE: Not in test mode, proceeding with database operations');
+    console.log(
+      'DELETE: Not in test mode, proceeding with database operations'
+    );
 
     // Check if timeslot exists and is not booked
     const { data: existingTimeslot, error: fetchError } = await supabase

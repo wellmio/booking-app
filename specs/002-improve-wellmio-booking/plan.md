@@ -160,9 +160,9 @@ _These phases are beyond the scope of the /plan command_
 
 _Fill ONLY if Constitution Check has violations that must be justified_
 
-| Violation                  | Why Needed         | Simpler Alternative Rejected Because |
-| -------------------------- | ------------------ | ------------------------------------ |
-| N/A                        |                    |                                      |
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+| --------- | ---------- | ------------------------------------ |
+| N/A       |            |                                      |
 
 ## Progress Tracking
 

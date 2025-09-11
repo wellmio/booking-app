@@ -16,7 +16,8 @@ describe('POST /api/stripe/webhook', () => {
 
   beforeAll(() => {
     baseUrl = process.env.TEST_BASE_URL || 'http://localhost:3000';
-    stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET || 'mock-webhook-secret';
+    stripeWebhookSecret =
+      process.env.STRIPE_WEBHOOK_SECRET || 'mock-webhook-secret';
   });
 
   afterAll(() => {
@@ -40,7 +41,10 @@ describe('POST /api/stripe/webhook', () => {
       // ... other event data
     };
     const payloadString = JSON.stringify(eventPayload);
-    const signature = generateStripeSignature(payloadString, stripeWebhookSecret);
+    const signature = generateStripeSignature(
+      payloadString,
+      stripeWebhookSecret
+    );
 
     const response = await fetch(`${baseUrl}/api/stripe/webhook`, {
       method: 'POST',

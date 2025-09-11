@@ -13,7 +13,7 @@ const customJestConfig = {
   collectCoverageFrom: ['src/**/*.{js,jsx,ts,tsx}', '!src/**/*.d.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    'stripe': '<rootDir>/tests/__mocks__/stripe.ts',
+    stripe: '<rootDir>/tests/__mocks__/stripe.ts',
   },
   testTimeout: 30000, // 30 seconds timeout for integration tests
   automock: true,
